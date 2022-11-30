@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  elixir:
+    build:
+      context: .
+      dockerfile: ./docker/elixir.Dockerfile
+    command: mix phx.server
+    ports:
+      - 4000:4000
+    env_file:
+      - .env
+    environment: &app_environment
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: app_dev
+      ENV: development
+      NODE_ENV: development
+    volumes:
+      - ./:/usr/app:cached
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment: *app_environment

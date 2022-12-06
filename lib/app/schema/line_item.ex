@@ -11,8 +11,10 @@ defmodule App.Schema.LineItem do
     field :uid, :string
     field :qty, :integer
 
-    belongs_to :cart, App.Schema.Cart
-    belongs_to :product, App.Schema.Product
+    belongs_to :cart, App.Schema.Cart,
+      on_replace: :delete
+    belongs_to :product, App.Schema.Product,
+      on_replace: :delete
 
     timestamps()
   end
@@ -21,11 +23,18 @@ defmodule App.Schema.LineItem do
   def changeset(line_item, attrs) do
     line_item
     |> Repo.preload(:product)
+    |> Repo.preload(:cart)
     |> cast(attrs, [:qty])
     |> Repo.put_uid()
     |> put_assoc(:product, get_assoc_product(Map.get(attrs, :product) || nil))
     |> put_assoc(:cart, get_assoc_cart(Map.get(attrs, :cart) || nil))
     |> validate_required([:uid, :qty])
+  end
+
+  def update_changeset(line_item, attrs) do
+    line_item
+    |> cast(attrs, [:qty])
+    |> validate_required([:qty])
   end
 
   defp get_assoc_product(nil), do: nil

@@ -12,7 +12,8 @@ defmodule App.Schema.Cart do
     field :session, :string
     field :paid_date, :naive_datetime
 
-    has_many :line_items, App.Schema.LineItem
+    has_many :line_items, App.Schema.LineItem,
+      on_replace: :delete
 
     timestamps()
   end

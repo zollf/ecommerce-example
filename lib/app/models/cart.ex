@@ -8,16 +8,35 @@ defmodule App.Models.Cart do
   def get_or_create_cart(session) do
     case get_cart(session) do
       nil ->
-        IO.puts("[#{session}]: Creating cart")
+        IO.puts(IO.ANSI.green() <> "[#{session}]: Creating cart")
         Models.Cart.create(%{session: session})
       cart ->
-        IO.puts("[#{session}]: Fetched existing cart")
+        IO.puts(IO.ANSI.green() <> "[#{session}]: Fetched existing cart")
         {:ok, cart}
     end
   end
 
   def get_cart(session) do
-    Repo.one(from c in Schema.Cart, order_by: c.inserted_at, where: c.session == ^session and is_nil(c.paid_date) )
+    Repo.one(
+      from c in Schema.Cart,
+      where: c.session == ^session and is_nil(c.paid_date),
+      order_by: c.inserted_at
+    )
+  end
+
+  @spec get_product_line_items(
+    Schema.Cart.t,
+    [String.t]
+  ) :: [Schema.LineItem.t]
+
+  @doc """
+  Gets line items within cart that are in the list of product ids
+  """
+  def get_product_line_items(cart_id, product_ids) do
+    Repo.all(
+      from l in Schema.LineItem,
+      where: l.product_id in ^product_ids and l.cart_id == ^cart_id
+    )
   end
 
   @spec save_product(
@@ -40,8 +59,8 @@ defmodule App.Models.Cart do
     case Models.LineItem.one(cart_id: cart.id, product_id: product.id) do
       {:not_found, _msg} -> Models.LineItem.create(%{cart: cart.id, product: product.id, qty: qty})
       {:ok, line_item} -> line_item
-        |> Schema.LineItem.changeset(%{qty: qty})
-        |> Repo.update
+        |> Schema.LineItem.changeset(%{qty: qty, cart: cart.id, product: product.id})
+        |> Repo.update()
     end
   end
 

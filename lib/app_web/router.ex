@@ -1,7 +1,7 @@
 defmodule AppWeb.Router do
   use AppWeb, :router
 
-  import AppWeb.Plugs.SessionUID
+  import AppWeb.Plugs.CustomerSession
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -10,7 +10,7 @@ defmodule AppWeb.Router do
     plug :put_root_layout, {AppWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :fetch_session_uid
+    plug :fetch_customer_session
   end
 
   pipeline :api do
@@ -20,7 +20,7 @@ defmodule AppWeb.Router do
   scope "/", AppWeb do
     pipe_through :browser
 
-    live "/", Views.Index
+    live "/", Live.Index
   end
 
   # Other scopes may use custom stacks.

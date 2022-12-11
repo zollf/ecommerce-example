@@ -15,6 +15,9 @@ defmodule App.Schema.Product do
     field :price, :float
     field :image, :string
 
+    has_many :line_items, App.Schema.LineItem,
+      on_replace: :delete
+
     timestamps()
   end
 

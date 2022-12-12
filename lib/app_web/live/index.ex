@@ -18,7 +18,6 @@ defmodule AppWeb.Live.Index do
 
     if connected?(socket) do
       Cart.subscribe(cart)
-      Phoenix.PubSub.subscribe(App.PubSub, @feed)
     end
 
     {:ok, assign(socket,
@@ -81,7 +80,7 @@ defmodule AppWeb.Live.Index do
     {:noreply, socket}
   end
 
-  def handle_info({:updated_feed, text}, socket) do
+  def handle_info({:new_message, text}, socket) do
     send_update AppWeb.Components.Feed,
       id: "feed",
       feed: [text]

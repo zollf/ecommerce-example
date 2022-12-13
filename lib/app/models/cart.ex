@@ -29,8 +29,8 @@ defmodule App.Models.Cart do
 
     case Repo.one query do
       nil -> %Cart{}
-        |> Repo.preload(:customer)
         |> Cart.changeset(%{customer_id: customer.id})
+        |> put_assoc(:customer, customer)
         |> Repo.insert!
       cart -> cart
     end
@@ -179,6 +179,7 @@ defmodule App.Models.Cart do
     cart
     |> Cart.changeset(%{paid_date: Repo.now()})
     |> Repo.update!
+    |> broadcast_payment
   end
 
   @doc """
@@ -194,7 +195,14 @@ defmodule App.Models.Cart do
       inner_join: p in Product, on: p.id == l.product_id,
       select: {sum(p.price * l.qty), sum(l.qty)}
     )
-    %{total_cost: total_cost, total_qty: total_qty}
+    {total_spent} = Repo.one(
+      from l in LineItem,
+      inner_join: p in Product, on: p.id == l.product_id,
+      inner_join: c in Cart, on: c.id == l.cart_id,
+      where: c.customer_id == ^cart.customer_id and not is_nil(c.paid_date),
+      select: {sum(p.price * l.qty)}
+    )
+    %{total_cost: total_cost, total_qty: total_qty, total_spent: total_spent}
   end
 
   @doc """
@@ -209,7 +217,7 @@ defmodule App.Models.Cart do
   defp topic(%Cart{} = cart), do: "customer:#{cart.customer_id}"
 
   defp broadcast(%Cart{} = cart, message), do: Phoenix.PubSub.broadcast(App.PubSub, topic(cart), message)
-  defp broadcast_feed(message), do: Phoenix.PubSub.broadcast(App.PubSub, topic_feed(), {:new_message, message})
+  defp broadcast_feed(message), do: Phoenix.PubSub.broadcast(App.PubSub, topic_feed(), message)
 
   defp feed_msg(%Cart{} = cart, %Product{} = product, :removed), do: "#{customer_name(cart.customer)} removed #{product.title} from their cart."
   defp feed_msg(%Cart{} = cart, %Product{} = product, :added), do: "#{customer_name(cart.customer)} added #{product.title} to their cart."
@@ -220,8 +228,20 @@ defmodule App.Models.Cart do
   defp customer_name(%Customer{name: name} = _), do: name
 
   defp broadcast_to_feed(%LineItem{} = line_item, %Cart{} = cart, action) do
-    broadcast_feed(feed_msg(cart, line_item.product, action))
+    broadcast_feed({:new_message, feed_msg(cart, line_item.product, action)})
     line_item
+  end
+
+  defp broadcast_payment(%Cart{} = cart) do
+    cart_summary = summary(cart)
+    %{total_cost: total_cost, total_qty: total_qty} = cart_summary
+    broadcast_feed({:new_message, "#{customer_name(cart.customer)} purchased #{total_qty} items for $#{total_cost}"})
+
+    new_cart = get_active_cart(cart.customer)
+    broadcast(cart, {:updated_cart, new_cart})
+    broadcast(cart, {:updated_summary, summary(new_cart)})
+
+    cart
   end
 
   defp broadcast_updated_line_item(%LineItem{} = line_item, %Cart{} = cart) do

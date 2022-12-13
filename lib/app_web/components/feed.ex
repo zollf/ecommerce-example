@@ -22,6 +22,6 @@ defmodule AppWeb.Components.Feed do
     old_feed = Map.get(socket.assigns, :feed, [])
     new_feed = Map.get(assigns, :feed, [])
 
-    {:ok, assign(socket, feed: Enum.slice(new_feed ++ old_feed, 0, 5))}
+    {:ok, assign(socket, feed: Enum.slice(new_feed ++ old_feed, 0, 20))}
   end
 end

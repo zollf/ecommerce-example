@@ -34,6 +34,7 @@ defmodule AppWeb.Live.Index do
       <.live_component
         module={CartSummary}
         summary={@summary}
+        cart={@cart}
         id="my-cart"
       />
       <div class="row">
@@ -43,7 +44,7 @@ defmodule AppWeb.Live.Index do
               module={AppWeb.Components.Product}
               product={product}
               line_item={nil}
-              cart={assigns.cart}
+              cart={@cart}
               id={product.id}
             />
           </div>
@@ -92,5 +93,9 @@ defmodule AppWeb.Live.Index do
       id: "my-cart",
       summary: summary
     {:noreply, socket}
+  end
+
+  def handle_info({:updated_cart, cart}, socket) do
+    {:noreply, assign(socket, :cart, cart)}
   end
 end

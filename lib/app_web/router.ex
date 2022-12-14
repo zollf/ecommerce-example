@@ -15,12 +15,25 @@ defmodule AppWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
+    plug :fetch_customer_session
   end
 
   scope "/", AppWeb do
     pipe_through :browser
 
     live "/", Live.Index
+  end
+
+  scope "/api", AppWeb do
+    pipe_through :api
+
+    get "/me", Controllers.Customer, :me
+
+    get "/cart", Controllers.Cart, :index
+    post "/cart/add_product", Controllers.Cart, :add_product
+
+    get "/products", Controllers.Product, :index
   end
 
   # Other scopes may use custom stacks.

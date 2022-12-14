@@ -22,48 +22,22 @@ defmodule App.Models.Cart do
   """
   @spec get_active_cart(customer :: Customer.t) :: Cart.t
   def get_active_cart(%Customer{} = customer) do
-    query = from c in Cart,
-      where: c.customer_id == ^customer.id and is_nil(c.paid_date),
-      order_by: c.inserted_at,
-      preload: [:customer]
+    query = from cart in Cart,
+      join: customer in assoc(cart, :customer),
+      join: line_item in assoc(cart, :line_items),
+      join: product in assoc(line_item, :product),
+      where: cart.customer_id == ^customer.id and is_nil(cart.paid_date),
+      order_by: cart.inserted_at,
+      preload: [customer: customer, line_items: {line_item, product: product}]
 
     case Repo.one query do
       nil -> %Cart{}
         |> Cart.changeset(%{customer_id: customer.id})
         |> put_assoc(:customer, customer)
+        |> put_assoc(:line_items, [])
         |> Repo.insert!
       cart -> cart
     end
-  end
-
-  @doc """
-  Adds a product to the given cart.
-
-    * `cart` - Cart to add product to.
-    * `product` - Product to be added.
-    * `qty` - Quantity of product to be added to cart. Default is 1.
-
-  ## Examples
-
-      iex> product = %Product{id: 1, title: "Bike", sku: "bike", description: "Bike desc", image: "bike.png"}
-      iex> cart = %Cart{id: 1}
-      iex> line_item = Cart.add_product(cart, product)
-
-      # Adding multiple
-      iex> product = %Product{id: 1, title: "Bike", sku: "bike", description: "Bike desc", image: "bike.png"}
-      iex> cart = %Cart{id: 1}
-      iex> Cart.add_product(cart, product, 10)
-      %LineItem{id: 1, cart_id: 1, product_1: 1, qty: 10}
-
-  """
-  @spec add_product(Cart.t, Product.t, Integer.t) :: LineItem.t
-  def add_product(%Cart{} = cart, %Product{} = product, qty \\ 1) do
-    %LineItem{}
-    |> LineItem.changeset(%{cart_id: cart.id, product_id: product.id, qty: max(1, qty)})
-    |> put_assoc(:product, product)
-    |> Repo.insert!
-    |> broadcast_updated_line_item(cart)
-    |> broadcast_to_feed(cart, :added)
   end
 
   @doc """
@@ -95,7 +69,6 @@ defmodule App.Models.Cart do
 
   def increase_qty(%Cart{} = cart, %LineItem{} = line_item, qty) when cart.id == line_item.cart_id do
     line_item
-    |> Repo.preload(:product)
     |> LineItem.update_changeset(%{qty: min(@max_qty, line_item.qty + qty)})
     |> Repo.update!
     |> broadcast_updated_line_item(cart)
@@ -103,8 +76,18 @@ defmodule App.Models.Cart do
   end
 
   def increase_qty(%Cart{} = cart, %Product{} = product, qty) do
-    case Repo.get_by(LineItem, cart_id: cart.id, product_id: product.id) do
-      nil -> add_product(cart, product, qty)
+    query = from line_item in LineItem,
+      join: product in assoc(line_item, :product),
+      where: ^cart.id == line_item.cart_id and ^product.id == line_item.product_id,
+      preload: [product: product]
+
+    case Repo.one(query) do
+      nil -> %LineItem{}
+        |> LineItem.changeset(%{cart_id: cart.id, product_id: product.id, qty: max(1, min(@max_qty, qty))})
+        |> put_assoc(:product, product)
+        |> Repo.insert!
+        |> broadcast_updated_line_item(cart)
+        |> broadcast_to_feed(cart, :added)
       line_item -> increase_qty(cart, line_item, qty)
     end
   end

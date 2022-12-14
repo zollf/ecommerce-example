@@ -43,7 +43,7 @@ defmodule AppWeb.Live.Index do
             <.live_component
               module={AppWeb.Components.Product}
               product={product}
-              line_item={nil}
+              line_item={Enum.find(@cart.line_items, & &1.product_id == product.id)}
               cart={@cart}
               id={product.id}
             />

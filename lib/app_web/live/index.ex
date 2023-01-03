@@ -7,8 +7,6 @@ defmodule AppWeb.Live.Index do
 
   alias AppWeb.Components.{CartSummary, Feed}
 
-  @feed "feed"
-
   @impl true
   def mount(_params, session, socket) do
     %{"customer_session_uid" => customer_session_uid} = session
@@ -31,6 +29,11 @@ defmodule AppWeb.Live.Index do
   def render(assigns) do
     ~H"""
     <div>
+      <.h1>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+          Fancy Heading
+        </span>
+      </.h1>
       <.live_component
         module={CartSummary}
         summary={@summary}

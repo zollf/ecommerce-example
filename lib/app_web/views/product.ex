@@ -18,7 +18,6 @@ defmodule AppWeb.Views.Product do
       uid: product.uid,
       inserted_at: product.inserted_at,
       updated_at: product.updated_at,
-      uid: product.uid,
       image: product.image,
       title: product.title,
       sku: product.sku,

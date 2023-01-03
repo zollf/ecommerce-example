@@ -19,6 +19,17 @@ defmodule AppWeb.Components.Product do
   @impl true
   def render(%{product: _, cart: _} = assigns) do
     ~H"""
+    <div>
+    <.card class="max-w-sm" variant="outline">
+      <.card_content category="Article" class="max-w-sm" heading="Enhance your Phoenix development">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus eget leo interdum, feugiat ligula eu, facilisis massa. Nunc sollicitudin massa a elit laoreet.
+      </.card_content>
+      <.card_footer>
+        <.button to="/" label="View">
+          <HeroiconsV1.Solid.eye class="w-4 h-4 mr-2" />View
+        </.button>
+      </.card_footer>
+    </.card>
     <div class="card">
       <div class="card-body">
         <h5 class="card-title">
@@ -48,6 +59,7 @@ defmodule AppWeb.Components.Product do
           </div>
         </p>
       </div>
+    </div>
     </div>
     """
   end

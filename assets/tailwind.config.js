@@ -12,12 +12,11 @@ module.exports = {
     '../lib/*_web/**/*.*ex',
     '../deps/petal_components/**/*.*ex'
   ],
-  darkMode: "class",
   theme: {
     extend: {
       colors: {
         brand: "#FD4F00",
-        primary: colors.green,
+        primary: colors.blue,
         secondary: colors.pink,
       },
     },

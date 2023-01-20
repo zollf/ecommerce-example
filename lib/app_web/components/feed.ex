@@ -5,14 +5,19 @@ defmodule AppWeb.Components.Feed do
   def render(assigns) do
     ~H"""
     <div class="row">
-      <h2>Live Feed</h2>
-      <%= for text <- @feed do %>
-        <div class="row">
-          <div>
-            <%= text %>
-          </div>
-        </div>
-      <% end %>
+      <.table>
+        <.tr>
+          <.th>Live Feed</.th>
+        </.tr>
+
+        <%= for text <- @feed do %>
+          <.tr>
+            <.td>
+              <%= text %>
+            </.td>
+          </.tr>
+        <% end %>
+      </.table>
     </div>
     """
   end
@@ -21,7 +26,6 @@ defmodule AppWeb.Components.Feed do
   def update(assigns, socket) do
     old_feed = Map.get(socket.assigns, :feed, [])
     new_feed = Map.get(assigns, :feed, [])
-
-    {:ok, assign(socket, feed: Enum.slice(new_feed ++ old_feed, 0, 20))}
+    {:ok, assign(socket, feed: Enum.slice(new_feed ++ old_feed, 0, 10))}
   end
 end

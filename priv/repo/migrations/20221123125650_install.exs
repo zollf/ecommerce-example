@@ -3,13 +3,14 @@ defmodule App.Repo.Migrations.Install do
 
   def change do
     create table(:customers) do
+      add :session_uid, :string, null: false
       add :uid, :string, null: false
       add :name, :string
 
       timestamps()
     end
 
-    create table(:carts) do
+    create table(:orders) do
       add :uid, :string, null: false
       add :paid_date, :naive_datetime
       add :customer_id, references(:customers), null: false
@@ -30,7 +31,7 @@ defmodule App.Repo.Migrations.Install do
 
     create table(:line_items) do
       add :uid, :string, null: false
-      add :cart_id, references(:carts, on_delete: :delete_all), null: false
+      add :order_id, references(:orders, on_delete: :delete_all), null: false
       add :product_id, references(:products), null: false
       add :qty, :integer, null: false
 

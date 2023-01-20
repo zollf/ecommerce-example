@@ -1,13 +1,13 @@
 defmodule AppWeb.Components.Product do
   use AppWeb, :live_component
 
-  alias App.Models.Cart
-
-  alias App.Schema
+  alias App.Shop
+  alias App.Shop.LineItem
+  alias App.Catalogue.Product
 
   @type assign :: %{
-    line_item: nil | Schema.LineItem,
-    product: Schema.Product,
+    line_item: nil | LineItem,
+    product: Product,
     cart: String.t,
   }
 
@@ -20,46 +20,29 @@ defmodule AppWeb.Components.Product do
   def render(%{product: _, cart: _} = assigns) do
     ~H"""
     <div>
-    <.card class="max-w-sm" variant="outline">
-      <.card_content category="Article" class="max-w-sm" heading="Enhance your Phoenix development">
-        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus eget leo interdum, feugiat ligula eu, facilisis massa. Nunc sollicitudin massa a elit laoreet.
-      </.card_content>
-      <.card_footer>
-        <.button to="/" label="View">
-          <HeroiconsV1.Solid.eye class="w-4 h-4 mr-2" />View
-        </.button>
-      </.card_footer>
-    </.card>
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">
-          <%= @product.title %>
-        </h5>
-        <p class="card-text">
-          <%= @product.description %>
-          <div class="d-flex justify-content-between">
-            <div class="btn-group">
-              <button type="button" class="btn btn-outline-secondary d-flex align-items-center" phx-click="minus" phx-target={@myself}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-dash-lg" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M2 8a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11A.5.5 0 0 1 2 8Z"/>
-                </svg>
-              </button>
-              <div class="btn d-flex align-items-center disabled">
-                <%= qty(@line_item) %>
-              </div>
-              <button type="button" class="btn btn-outline-secondary d-flex align-items-center" phx-click="add" phx-target={@myself}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
-                </svg>
-              </button>
+      <.card class="max-w-sm bg-gray-800" variant="outline">
+        <.card_content class="max-w-sm relative" heading={@product.title}>
+          <%= if qty(@line_item) > 0 do %>
+            <div class="absolute top-6 right-6">
+              <.button color="secondary" label={qty(@line_item)} phx-click="remove" phx-target={@myself} />
             </div>
+          <% end %>
+          <%= @product.description %>
+        </.card_content>
+        <.card_footer>
+          <div class="flex w-full justify-between items-end">
+            <.h2 class="mb-0">$<%= @product.price %></.h2>
             <div>
-              <%= @product.price %>
+              <.button link_type="button" label="View" color="primary" phx-click="minus" phx-target={@myself}>
+                <HeroiconsV1.Solid.minus class="w-4 h-6" />
+              </.button>
+              <.button link_type="button" label="View" color="primary" phx-click="add" phx-target={@myself}>
+                <HeroiconsV1.Solid.plus class="w-4 h-6" />
+              </.button>
             </div>
           </div>
-        </p>
-      </div>
-    </div>
+        </.card_footer>
+      </.card>
     </div>
     """
   end
@@ -68,11 +51,22 @@ defmodule AppWeb.Components.Product do
   def qty(line_item), do: line_item.qty
 
   @impl true
+  def handle_event("remove", _, %{assigns: assigns} = socket) do
+    %{cart: cart} = assigns
+    case assigns do
+      %{line_item: nil} -> nil
+      %{line_item: line_item} -> Shop.decrease_qty_of_item_in_order(cart, line_item, line_item.qty)
+    end
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("add", _, %{assigns: assigns} = socket) do
     %{product: product, cart: cart} = assigns
     case assigns do
-      %{line_item: nil} -> Cart.increase_qty(cart, product)
-      %{line_item: line_item} -> Cart.increase_qty(cart, line_item)
+      %{line_item: nil} -> Shop.increase_qty_of_item_in_order(cart, product)
+      %{line_item: line_item} -> Shop.increase_qty_of_item_in_order(cart, line_item)
     end
 
     {:noreply, socket}
@@ -83,8 +77,9 @@ defmodule AppWeb.Components.Product do
     %{cart: cart} = assigns
     case assigns do
       %{line_item: nil} -> nil
-      %{line_item: line_item} -> Cart.decrease_qty(cart, line_item)
+      %{line_item: line_item} -> Shop.decrease_qty_of_item_in_order(cart, line_item)
     end
+
     {:noreply, socket}
   end
 end

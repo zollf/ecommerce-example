@@ -6,14 +6,8 @@ defmodule App.Repo do
   import Ecto.Changeset
 
   @spec put_uid(Ecto.Changeset.t) :: Ecto.Changeset.t
-  def put_uid(changeset) do
-    changeset
-    |> put_change(:uid, Ecto.UUID.generate())
-  end
+  def put_uid(changeset), do: put_change(changeset, :uid, Ecto.UUID.generate())
 
   @spec now() :: NaiveDateTime.t
-  def now() do
-    NaiveDateTime.utc_now()
-    |> NaiveDateTime.truncate(:second)
-  end
+  def now(), do: NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
 end

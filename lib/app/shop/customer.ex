@@ -1,4 +1,4 @@
-defmodule App.Schema.Customer do
+defmodule App.Shop.Customer do
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -8,19 +8,21 @@ defmodule App.Schema.Customer do
   @type t :: %__MODULE__{}
 
   schema "customers" do
+    field :session_uid, :string
     field :uid, :string
     field :name, :string
 
-    has_many :carts, App.Schema.Cart,
+    has_many :orders, App.Shop.Order,
       on_replace: :delete
 
     timestamps()
   end
 
   @spec changeset(t, map) :: Ecto.Changeset.t
-  def changeset(session, attrs) do
-    session
-    |> cast(attrs, [:name])
+  def changeset(customer, attrs) do
+    customer
+    |> cast(attrs, [:name, :session_uid])
+    |> validate_required([:session_uid])
     |> Repo.put_uid()
   end
 end

@@ -1,7 +1,7 @@
 defmodule AppWeb.Views.Product do
   use AppWeb, :view
 
-  alias App.Schema.Product
+  alias App.Catalogue.Product
   alias AppWeb.Views
 
   def render("index.json", %{products: products}) do

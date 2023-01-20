@@ -1,4 +1,4 @@
-defmodule App.Schema.LineItem do
+defmodule App.Shop.LineItem do
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -11,10 +11,10 @@ defmodule App.Schema.LineItem do
     field :uid, :string
     field :qty, :integer
 
-    belongs_to :cart, App.Schema.Cart,
+    belongs_to :order, App.Shop.Order,
       on_replace: :delete
 
-    belongs_to :product, App.Schema.Product,
+    belongs_to :product, App.Catalogue.Product,
       on_replace: :delete
 
     timestamps()
@@ -23,7 +23,7 @@ defmodule App.Schema.LineItem do
   @spec changeset(t, map) :: Ecto.Changeset.t
   def changeset(line_item, attrs) do
     line_item
-    |> cast(attrs, [:qty, :product_id, :cart_id])
+    |> cast(attrs, [:qty, :product_id, :order_id])
     |> Repo.put_uid()
     |> validate_required([:uid, :qty])
   end

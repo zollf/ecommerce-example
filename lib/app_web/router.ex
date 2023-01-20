@@ -1,7 +1,7 @@
 defmodule AppWeb.Router do
   use AppWeb, :router
 
-  import AppWeb.Plugs.CustomerSession
+  import AppWeb.Plugs.Session
 
   pipeline :browser do
     plug :accepts, ["html"]
@@ -10,13 +10,13 @@ defmodule AppWeb.Router do
     plug :put_root_layout, {AppWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
-    plug :fetch_customer_session
+    plug :fetch_session_uid
   end
 
   pipeline :api do
     plug :accepts, ["json"]
     plug :fetch_session
-    plug :fetch_customer_session
+    plug :fetch_session_uid
   end
 
   scope "/", AppWeb do
@@ -34,6 +34,7 @@ defmodule AppWeb.Router do
     post "/cart/add_product", Controllers.Cart, :add_product
 
     get "/products", Controllers.Product, :index
+    post "/products/create", Controllers.Product, :create
   end
 
   # Other scopes may use custom stacks.

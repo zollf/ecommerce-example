@@ -1,7 +1,7 @@
 defmodule AppWeb.Views.LineItem do
   use AppWeb, :view
 
-  alias App.Schema.LineItem
+  alias App.Shop.LineItem
   alias AppWeb.Views
 
   def render("index.json", %{line_items: line_items}) do

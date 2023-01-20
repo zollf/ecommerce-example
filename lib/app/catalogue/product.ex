@@ -1,4 +1,4 @@
-defmodule App.Schema.Product do
+defmodule App.Catalogue.Product do
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -15,7 +15,7 @@ defmodule App.Schema.Product do
     field :price, :float
     field :image, :string
 
-    has_many :line_items, App.Schema.LineItem,
+    has_many :line_items, App.Shop.LineItem,
       on_replace: :delete
 
     timestamps()

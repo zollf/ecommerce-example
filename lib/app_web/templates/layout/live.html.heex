@@ -1,21 +1,19 @@
-<main>
-  <.container>
-    <.alert
-      color="info"
-      class="mb-5"
-      label={live_flash(@flash, :info)}
-      phx-click="lv:clear-flash"
-      phx-value-key="info"
-    />
+<main class="relative w-full bg-gray-900 p-10 h-full min-h-screen text-white">
+  <.alert
+    color="info"
+    class="mb-5"
+    label={live_flash(@flash, :info)}
+    phx-click="lv:clear-flash"
+    phx-value-key="info"
+  />
 
-    <.alert
-      color="danger"
-      class="mb-5"
-      label={live_flash(@flash, :error)}
-      phx-click="lv:clear-flash"
-      phx-value-key="error"
-    />
+  <.alert
+    color="danger"
+    class="mb-5"
+    label={live_flash(@flash, :error)}
+    phx-click="lv:clear-flash"
+    phx-value-key="error"
+  />
 
-    <%= @inner_content %>
-  </.container>
+  <%= @inner_content %>
 </main>

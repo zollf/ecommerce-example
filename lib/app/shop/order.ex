@@ -1,4 +1,4 @@
-defmodule App.Schema.Cart do
+defmodule App.Shop.Order do
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -7,14 +7,14 @@ defmodule App.Schema.Cart do
 
   @type t :: %__MODULE__{}
 
-  schema "carts" do
+  schema "orders" do
     field :uid, :string
     field :paid_date, :naive_datetime
 
-    has_many :line_items, App.Schema.LineItem,
+    has_many :line_items, App.Shop.LineItem,
       on_replace: :delete
 
-    belongs_to :customer, App.Schema.Customer,
+    belongs_to :customer, App.Shop.Customer,
       on_replace: :delete
 
     timestamps()

@@ -1,7 +1,7 @@
 defmodule AppWeb.Views.Customer do
   use AppWeb, :view
 
-  alias App.Schema.Customer
+  alias App.Shop.Customer
   alias AppWeb.Views
 
   def render("view.json", %{customer: %Customer{} = customer}) do

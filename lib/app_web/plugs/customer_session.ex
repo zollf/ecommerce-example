@@ -4,10 +4,10 @@ defmodule AppWeb.Plugs.Session do
   import Plug.Conn
 
   def fetch_session_uid(conn, _opts) do
-    if get_session(conn, :uid) == nil do
-      put_session(conn, :uid, Ecto.UUID.generate())
+    if get_session(conn, :session_uid) == nil do
+      put_session(conn, :session_uid, Ecto.UUID.generate())
+    else
+      conn
     end
-
-    conn
   end
 end

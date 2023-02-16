@@ -29,6 +29,7 @@ defmodule App.Shop do
     customer
     |> create_new_order
     |> broadcast_new_cart
+    |> broadcast_updated_order_summary
   end
 
   @spec get_customers_active_cart(Customer.t()) :: Order.t()
@@ -157,7 +158,7 @@ defmodule App.Shop do
 
   @spec get_order_summary(Order.t()) :: map()
   def get_order_summary(%Order{} = order) do
-    {total_qty, total_cost} =
+    {total_cost, total_qty} =
       Repo.one(
         from l in LineItem,
           where: l.order_id == ^order.id,
@@ -166,7 +167,7 @@ defmodule App.Shop do
           select: {sum(p.price * l.qty), sum(l.qty)}
       )
 
-    %{total_qty: total_qty, total_cost: total_cost}
+    %{total_cost: total_cost, total_qty: total_qty}
   end
 
   @spec get_customer_summary(Customer.t()) :: map()
@@ -195,6 +196,7 @@ defmodule App.Shop do
     subscribe(new_customer)
 
     new_customer
+    |> broadcast_updated_customer_summary
     |> create_new_cart
     |> broadcast_updated_order_summary
   end

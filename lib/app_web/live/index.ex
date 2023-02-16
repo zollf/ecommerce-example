@@ -11,9 +11,9 @@ defmodule AppWeb.Live.Index do
   def mount(_params, session, socket) do
     IO.inspect(session)
 
-    %{"uid" => uid} = session
+    %{"session_uid" => session_uid} = session
 
-    customer = Shop.get_active_customer(uid)
+    customer = Shop.get_active_customer(session_uid)
     cart = Shop.get_customers_active_cart(customer)
 
     if connected?(socket) do
@@ -128,31 +128,18 @@ defmodule AppWeb.Live.Index do
 
   @impl true
   def handle_info({:updated_customer_summary, customer_summary}, socket) do
-    send_update(Summary,
-      id: "summary",
-      cart: socket.assigns.cart,
-      order_summary: socket.assigns.order_summary,
-      customer_summary: customer_summary
-    )
-
-    {:noreply, socket}
+    {:noreply, assign(socket,  customer_summary: customer_summary)}
   end
 
   @impl true
   def handle_info({:updated_order_summary, order_summary}, socket) do
-    send_update(Summary,
-      id: "summary",
-      cart: socket.assigns.cart,
-      order_summary: order_summary,
-      customer_summary: socket.assigns.customer_summary
-    )
-
-    {:noreply, socket}
+    {:noreply, assign(socket,  order_summary: order_summary)}
   end
 
   @impl true
-  def handle_info({:new_cart, %Order{} = order}, socket),
-    do: {:noreply, assign(socket, cart: order)}
+  def handle_info({:new_cart, %Order{} = order}, socket) do
+    {:noreply, assign(socket, cart: order)}
+  end
 
   defp find_line_item_in_products(products, %LineItem{} = line_item) do
     Enum.find(products, &(&1.id == line_item.product_id))

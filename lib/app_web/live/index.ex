@@ -5,7 +5,7 @@ defmodule AppWeb.Live.Index do
   alias App.Shop
   alias App.Catalogue
 
-  alias AppWeb.Components.{Summary, Feed, Product}
+  alias AppWeb.Components.{Summary, Feed, ProductRow, ProductTable}
 
   @impl true
   def mount(_params, session, socket) do
@@ -38,31 +38,29 @@ defmodule AppWeb.Live.Index do
           Live eCommerce
         </span>
       </.h1>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <div class="flex justify-between mb-4">
-            <.h2>Products</.h2>
-          </div>
-          <div class="grid grid-cols-2 gap-4 auto-rows-min">
-            <%= for product <- @products do %>
-              <.live_component
-                module={AppWeb.Components.Product}
-                product={product}
-                line_item={Enum.find(@cart.line_items, & &1.product_id == product.id)}
-                cart={@cart}
-                id={product.id}
-              />
-            <% end %>
+      <div class="grid grid-cols-5 gap-4">
+        <div class="col-span-3">
+          <.h4>Customer UID: <%= String.slice(@cart.customer.uid, 0..7) %></.h4>
+          <.h4>Cart UID: <%= String.slice(@cart.uid, 0..7) %></.h4>
+          <div class="flex gap-2">
+            <.button with_icon link_type="button" phx-click="reset">
+              <HeroiconsV1.Solid.refresh solid class="w-5 h-5" /> Reset
+            </.button>
+            <.button with_icon link_type="button" disabled={!has_items(@order_summary)} phx-click="pay">
+              <HeroiconsV1.Solid.shopping_cart solid class="w-5 h-5" />
+              Pay $<%= @order_summary.total_cost || "0.00" %>
+            </.button>
           </div>
         </div>
-        <div class="flex gap-4 flex-col">
+        <div class="col-span-3">
           <.live_component
-            module={Summary}
-            order_summary={@order_summary}
-            customer_summary={@customer_summary}
+            module={ProductTable}
             cart={@cart}
-            id="summary"
+            products={@products}
+            id="products"
           />
+        </div>
+        <div class="col-span-2 flex gap-4 flex-col">
           <.live_component module={Feed} id="feed" />
         </div>
       </div>
@@ -70,11 +68,13 @@ defmodule AppWeb.Live.Index do
     """
   end
 
+  def has_items(order_summary), do: order_summary.total_qty != nil and order_summary.total_qty > 0
+
   @impl true
   def handle_info({:increase_item_qty, %LineItem{} = line_item}, socket) do
     product = find_line_item_in_products(socket.assigns.products, line_item)
 
-    send_update(Product,
+    send_update(ProductRow,
       id: product.id,
       line_item: line_item,
       cart: socket.assigns.cart,
@@ -88,7 +88,7 @@ defmodule AppWeb.Live.Index do
   def handle_info({:new_item, %LineItem{} = line_item}, socket) do
     product = find_line_item_in_products(socket.assigns.products, line_item)
 
-    send_update(Product,
+    send_update(ProductRow,
       id: product.id,
       line_item: line_item,
       cart: socket.assigns.cart,
@@ -102,7 +102,7 @@ defmodule AppWeb.Live.Index do
   def handle_info({:removed_item, %LineItem{} = line_item}, socket) do
     product = find_line_item_in_products(socket.assigns.products, line_item)
 
-    send_update(Product,
+    send_update(ProductRow,
       id: product.id,
       line_item: nil,
       cart: socket.assigns.cart,
@@ -116,7 +116,7 @@ defmodule AppWeb.Live.Index do
   def handle_info({:decrease_item_qty, %LineItem{} = line_item}, socket) do
     product = find_line_item_in_products(socket.assigns.products, line_item)
 
-    send_update(Product,
+    send_update(ProductRow,
       id: product.id,
       line_item: line_item,
       cart: socket.assigns.cart,

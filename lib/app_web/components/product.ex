@@ -20,7 +20,7 @@ defmodule AppWeb.Components.Product do
   def render(%{product: _, cart: _} = assigns) do
     ~H"""
     <div>
-      <.card class="max-w-sm bg-gray-800" variant="outline">
+      <.card class="max-w-sm" variant="outline">
         <.card_content class="max-w-sm relative" heading={@product.title}>
           <%= if qty(@line_item) > 0 do %>
             <div class="absolute top-6 right-6">
